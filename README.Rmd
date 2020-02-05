@@ -1,0 +1,91 @@
+
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+library(badger)
+```
+
+# VarReg publication
+
+<!-- badges: start -->
+`r badge_cran_release("VarReg", "orange")` 
+`r badge_devel("kristyrobledo/VarReg", "blue")`
+`r badge_cran_download("VarReg", "grand-total", "blue")`
+`r badge_cran_download("VarReg", "last-month", "green")`
+`r badge_cran_download("VarReg", "last-week", "yellow")`
+<!-- badges: end -->
+
+<!-- Please don't remove this: Grab your social icons from https://github.com/carlsednaoui/gitsocial -->
+
+<!-- display the social media buttons in your README -->
+
+<!--[![alt text][1.1]][1] -->
+
+
+
+<!-- links to social media icons -->
+<!-- no need to change these -->
+
+<!-- icons with padding -->
+
+[1.1]: http://i.imgur.com/tXSoThF.png (twitter icon with padding)
+[2.1]: http://i.imgur.com/P3YfQoD.png (facebook icon with padding)
+[3.1]: http://i.imgur.com/yCsTjba.png (google plus icon with padding)
+[4.1]: http://i.imgur.com/YckIOms.png (tumblr icon with padding)
+[5.1]: http://i.imgur.com/1AGmwO3.png (dribbble icon with padding)
+[6.1]: http://i.imgur.com/0o48UoR.png (github icon with padding)
+
+<!-- icons without padding -->
+
+[1.2]: http://i.imgur.com/wWzX9uB.png (twitter icon without padding)
+[2.2]: http://i.imgur.com/fep1WsG.png (facebook icon without padding)
+[3.2]: http://i.imgur.com/VlgBKQ9.png (google plus icon without padding)
+[4.2]: http://i.imgur.com/jDRp47c.png (tumblr icon without padding)
+[5.2]: http://i.imgur.com/Vvy3Kru.png (dribbble icon without padding)
+[6.2]: http://i.imgur.com/9I6NRUm.png (github icon without padding)
+
+
+<!-- links to your social media accounts -->
+<!-- update these accordingly -->
+
+[1]: http://www.twitter.com/redheadkristy
+
+
+<!-- Please don't remove this: Grab your social icons from https://github.com/carlsednaoui/gitsocial -->
+
+This is a repo for the publication of the VarReg R package. 
+
+## :raising_hand: Author
+
+Kristy Robledo <https://github.com/kristyrobledo>
+
+NHMRC Clinical Trials Centre, University of Sydney
+
+Follow me on [![alt text][1.2]][1]
+
+## :arrow_double_down: Installation of package
+
+If you want to install the VarReg package - please use the following code. 
+
+You can install the released version of VarReg from [CRAN](https://CRAN.R-project.org) with:
+
+``` r
+install.packages("VarReg")
+```
+
+And the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("kristyrobledo/VarReg")
+```
