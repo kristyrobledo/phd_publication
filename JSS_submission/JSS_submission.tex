@@ -1,0 +1,249 @@
+\documentclass[
+]{jss}
+
+\usepackage[utf8]{inputenc}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\author{
+Kristy P Robledo\\NHMRC Clinical Trials Centre, University of Sydney \AND Ian C Marschner\\NHMRC Clinical Trials Centre, University of Sydney
+}
+\title{Semi-Parametric Variance Regression with Extensions and Implementation
+Within the R Package \pkg{VarReg}}
+
+\Plainauthor{Kristy P Robledo, Ian C Marschner}
+\Plaintitle{Semi-Parametric Variance Regression with Extensions with Implementation
+Within the R Package VarReg}
+\Shorttitle{\pkg{VarReg}: Semi-Parametric Variance Regression}
+
+\Abstract{
+An amazing abstract.
+}
+
+\Keywords{semi-parametric, variance regression, \proglang{R}}
+\Plainkeywords{semi-parametric, variance regression, R}
+
+%% publication information
+%% \Volume{50}
+%% \Issue{9}
+%% \Month{June}
+%% \Year{2012}
+%% \Submitdate{}
+%% \Acceptdate{2012-06-04}
+
+\Address{
+    Kristy P Robledo\\
+  NHMRC Clinical Trials Centre, University of Sydney\\
+  Locked Bag 77 Camperdown Sydney Australia 2050\\
+  E-mail: \email{kristy.robledo@ctc.usyd.edu.au}\\
+  URL: \url{http://kristyrobledo.netlify.com/}\\~\\
+    }
+
+
+% Pandoc header
+
+\usepackage{amsmath} \usepackage{bm}
+
+\begin{document}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Variance regression models arise in a variety of contexts, including
+measurement error and variance heterogeneity in standard linear
+regression analysis. Such models are necessary when the variance of the
+outcome measure changes as a covariate changes. The use of a variance
+regression model may be because the variance itself is of interest, or
+to increase the precision in estimation of the mean. In some areas, such
+as biomarker analysis, it may be that the variance itself is of
+interest.
+
+We can consider the variance regression model as \begin{equation} 
+X_i \sim N\left( f(x_i), g(x_i) \right), ~~~ i=1,2,...,n
+\end{equation} where \(g( )\) and \(h( )\) are known functions of a
+covariate \(x_i\). This can also be extended to \begin{equation} 
+X_i \sim N\left(\sum f(x_{ij}), \sum g(z_{ij}) \right), ~~~ i=1,2,...,n
+\end{equation} where we consider multiple covariates, and also that the
+covariates in the mean model are not necessarily the same covariates as
+the variance model.
+
+Generally, the variance regression model
+\citep{Aitkin1987, Verbyla1993, Smyth2002} uses a log-link model,
+\(h(z)=\log(z)\), and thus the covariates affect the variance
+multiplicatively. This is primarily because covariate effects in
+variance heterogeneity models can be negative as well as positive, and
+the use of a multiplicative model ensures that the overall error
+variance remains non-negative. Since this is simply a computational
+convenience, it may be that additive variance heterogeneity is more
+appropriate in some contexts. Indeed, additive decomposition of the
+variance is standard in other contexts, such as variance components
+models and genome-wide association studies. An attractive property of
+additive variance models is that spline models are effectively additive
+models, so semi-parametric models are obtained with little additional
+effort.
+
+In Section 2 we present a new algorithm for fitting a model in the
+variance, and extend this algorithm to allow for censored data and
+skewness models This extension allows modelling in the location, scale
+and shape, and we show demonstrate the package \pkg{VarReg} in
+\proglang{R} and outline the computational methods in Section 3 and 4.
+Section 5 explains the advantages in stability that this algorithm has
+over other packages currently available. Lastly in Section 6 we show
+that the inclusion of splines in the model is straightforward.
+
+\hypertarget{variance-regression-model}{%
+\section{Variance regression model}\label{variance-regression-model}}
+
+A general model and the motivation for the expectation - maximisation
+(EM) algorithm is explained in detail elsewhere \textbf{(ref other
+paper)}. Briefly, let the number of covariates on which the mean depends
+be \(P\), giving us \(\mathbf{z_i} =(1, z_{i1}, ..., z_{iP} )^T\) and
+the number of covariates on which the variance depends be \(Q\), giving
+\(\mathbf{x_i} =\left(1, x_{i1}, ..., x_{iQ} \right)^T\). This leads to
+the following general model \begin{align} 
+X_i \sim N\left(\bm{\beta}^T \mathbf{z}, ~~ \bm{\alpha}^T \mathbf{x} \right) ~~~ \textrm{for }~ i=1, 2,...,n \label{eq_main}
+\end{align} where \(\bm{\beta} =( \beta_0,...,\beta_P)^T\) and
+\(\bm{\alpha} = (\alpha_0, ..., \alpha_Q)^T\). Note that for simplicity
+we assume that the covariates \(\mathbf{x}\) are each scaled such that
+\(x_i \in [0,1]\). To fit a model in the mean and variance, we use the
+\proglang{xx} function, such as
+
+(example R code)
+
+\hypertarget{computational-methods}{%
+\section{Computational methods}\label{computational-methods}}
+
+The main purpose of the \pkg{VarReg} package is to provide an
+implementation of the combinational EM (CEM) algorithm in variance
+regression. Although other packages are currently avaiable in
+\proglang{R} to fit variance regression models, such as \pkg{gamlss},
+there are benefits to programmers having a suite of tools available to
+fit computationally intensive models. In Section 5 we will demonstrate
+the stability advantages that the \pkg{VarReg} package has over the
+\pkg{gamlss} package.
+
+\hypertarget{cem-for-variance-regression}{%
+\subsection{CEM for Variance
+regression}\label{cem-for-variance-regression}}
+
+In order to fit the model given in ?ref eq above, we consider that\\
+where . We propose a hypothetical complete data model that can be used
+to motivate an EM algorithm. Suppose that \(\mathbf{x}\) is composed of
+independent, unobserved, latent variables with complete data model
+\(\mathbf{X} =\mathbf{Y}+\mathbf{Z}\). So if there are a total of \(Q\)
+covariates to be fit in the variance model, there are then \(Q+1\)
+independent, unobserved, latent variables, \begin{align*}
+ Y_{i} \sim N(\beta_0+ \sum\limits_{p=1}^P \beta_{ip} z_{ip}, \alpha_0)\textrm{,    } ~~
+ Z_{i1} \sim N(0, \alpha_1 x_{i1})\textrm{, ...,   } ~~
+ Z_{iQ} \sim N(0, \alpha_Q x_{iQ}) ,\\ 
+ \textrm{where  } X_i=Y_i+Z_{i1}+...+Z_{iQ}.
+  \end{align*}
+
+Thus we have fit a constrained maximisation of the observed data
+log-likelihood, where \(\alpha \geq 0\). We need to search our entire
+parameter space, that is, non-decreasing variance
+(\({\alpha}_q \geq 0\)) and decreasing (\({\alpha}_q < 0\)) variance,
+for each \(\alpha_{q}\) parameter. To maintain generalisability, assume
+that each continuous covariate is scaled such that \(x_{i} \in [0,1]\).
+Therefore, the constant term in the variance model (\(\alpha_0\)) will
+be the variance when all other variance parameters are zero. In order to
+search for non-positive slope, an EM algorithm is fit using the
+covariate \(1-x_i\) in place of \(x_i\), and thus the EM algorithm is
+maximising the log-likelihood over the parameter space estimates for
+\(\alpha_0 \geq 0\) and \(\alpha_q < 0\) for \(q=1,2,...,Q\). By
+repeating this for all possible covariate combinations, we have a total
+of \(2^Q\) EM algorithms to apply to these data in order to search the
+entire parameter space. The MLE will then be the \(\hat{\bm{\theta}}\)
+from the EM algorithm that achieved the highest log-likelihood. These
+\(2^Q\) models are referred to as the family of complete data models,
+and is another instance of a CEM algorithm. While this is one method to
+search the entire parameter space for the MLE, other methods that may
+also be more efficient could be utilised
+\citep{Donoghoe2016, Marschner2013}. \textbackslash{}
+
+\hypertarget{extension-to-censoring}{%
+\subsection{Extension to censoring}\label{extension-to-censoring}}
+
+In the context of clinical trials, biomarker data can be found to be
+below or above the limits of detection for an assay. If \(X_i^*\) is our
+true outcome data, let \(X_i\) be the outcome data observed with
+censoring and let us account for left censoring (\(X^{(L)}\) is the
+lower limit of detection) and right censoring (\(X^{(U)}\) is the upper
+limit of detection):\\
+\begin{align}
+X_i = 
+  \begin{cases}
+X_i^*,          & \text{if } X^{(L)} \leq X_i^* \leq X^{(U)}\\
+X^{(L)},        & \text{if } X_i^* < X^{(L)} ~~~~~~~~~~~~~~~~~~~~~~~\textrm{for  } i = 1,2 .., n.\\
+X^{(U)},        & \text{if } X_i^* > X^{(U)}
+\end{cases} \label{xi}
+\end{align} We will also need to specify \(c\), the censoring indicator,
+where \begin{align*}
+c_i = 
+  \begin{cases}
+0,          & \text{if } X^{(L)} \leq X_i^* \leq X^{(U)}\\
+-1,        & \text{if } X_i^* < X^{(L)}\\
+1,      & \text{if } X_i^* > X^{(U)}.
+\end{cases}
+\end{align*} The log-likelihood corresponding to the complete data model
+is \begin{align}
+L \left( \bm{\theta} \right) = 
+  -\frac{n}{2}  \log(2\pi)-\frac{1}{2} \sum\limits_{i=1}^n \log \left( \alpha_0 \right) -\frac{1}{2} \sum\limits_{i=1}^n \dfrac{\left( Y_i-\beta_0- \sum\limits_{p=1}^P \beta_p z_{ip}\right) ^2}{\alpha_0} \nonumber \\[6pt]
+-\frac{n}{2}  \log(2\pi)-\frac{1}{2} \sum\limits_{i=1}^n \log \left(\alpha_1 x_{i1} \right) -\frac{1}{2} \sum\limits_{i=1}^n \dfrac{\left( Z_{i1} \right) ^2}{\alpha_1 x_{i1}}
++... \nonumber \\[6pt]
+-\frac{n}{2}  \log(2\pi)-\frac{1}{2} \sum\limits_{i=1}^n \log \left(\alpha_Q x_{iQ} \right) -\frac{1}{2} \sum\limits_{i=1}^n \dfrac{\left( Z_{iQ} \right) ^2}{\alpha_Q x_{iQ}},  \label{completedatall}
+\end{align} and is linear in \(Y_i^2\) and \(Z_{iq}^2\). This censored
+data is easily incorporated into our CEM algorithm as an extra level of
+missingness. Similarly to the general model, let the mean model have
+covariates \(\bm{z}_{i}=(z_{i1}, ..., z_{iP})\), with coefficients
+\(\bm{\beta}_{}=(\beta_{1}, ...,\beta_{P})\); and the variance model
+have covariates, \(\bm{x}_{i} = (x_{i1}, ..., x_{iQ})\) with
+coefficients \(\bm{\alpha}_{} = (\alpha_{1}, ..., \alpha_{Q})\). Also,
+let us assume that the covariates \(x_{iq}\) are scaled such that
+\(x_{iq} \in [0,1]\). For simplicity, let \begin{align*}
+\mu(\bm{\beta})=\beta_0+\sum\limits_{p=1}^P \beta_p z_{ip} ~~~~ \text{and} ~~~~
+  \sigma^2(\bm{\alpha})=\alpha_0+\sum\limits_{q=1}^Q \alpha_q x_{iq}.
+\end{align*} If \(\Phi\) is the standard normal cumulative distribution
+function and \(\phi\) is the standard normal probability density
+function, then two useful functions are
+\(R(z)=\dfrac{\phi(z)}{1-\Phi(z)}\) and
+\(Q(z)=\dfrac{-\phi(z)}{\Phi(z)}\) \citep{Mills1926}. Additionally, when
+\(z\) tends to negative infinity, the approximation
+\$\dfrac{\phi(z)}{\Phi(z)} \approx -z \$ can be used.
+\textbackslash{[}6pt{]} The likelihood function for the observed data
+model with censored data is \begin{align*}
+l(\bm{\beta, \alpha}) = \prod_{i=1}^{N} l_i
+\end{align*} where \begin{align*}
+l_i = 
+  \begin{cases}
+\displaystyle \frac{1}{\sigma(\bm{\alpha})} \phi \left( \frac{X_i-\mu(\bm{\beta}))}{\sigma(\bm{\alpha})} \right)  ,         & \text{if } c_i=0\\[10pt]
+\displaystyle 1- \Phi \left( \frac{\mu(\bm{\beta}) - X_i^{(L)}}{\sigma(\bm{\alpha})} \right)  ,        & \text{if } c_i=-1\\[10pt]
+\displaystyle \Phi \left( \frac{\mu(\bm{\beta}) - X_i^{(U)}}{\sigma(\bm{\alpha})} \right)  ,        & \text{if } c_i=1. 
+\end{cases}
+\end{align*} The corresponding log-likelihood is then \begin{align*}
+\ell(\bm{\beta, \alpha}) =  \sum_{i=1}^{N} \ell_i, 
+\end{align*} where \begin{align*}
+\ell_i =
+  \begin{cases}
+\displaystyle \log \left( \frac{1}{\sigma(\bm{\alpha})} \phi \left( \frac{X_i- \mu(\bm{\beta})}{\sigma(\bm{\alpha})} \right)  \right),          & \text{if } c_i=0\\[10pt]
+\displaystyle \log \left( 1- \Phi \left( \frac{\mu(\bm{\beta}) - X_i^{(L)}}{\sigma(\bm{\alpha})} \right) \right) ,        & \text{if } c_i=-1\\[10pt]
+\displaystyle \log \left( \Phi \left( \frac{\mu(\bm{\beta}) - X_i^{(U)}}{\sigma(\bm{\alpha})} \right)  \right),        & \text{if } c_i=1. 
+\end{cases}
+\end{align*} Now in the CEM algorithm, the uncensored outcome variable
+\(X_i^*\) will be assumed to be composed of \(Q+1\) independent,
+unobserved, latent variables: \begin{align}
+X_i^* =Y_i+Z_{i1}+...+Z_{iQ} \quad \textrm{where}  \quad
+Y_i &\sim N(0, \alpha_0) \quad \textrm{and}  \nonumber \\
+Z_{i1} &\sim N(0,  \alpha_1x_{i1})  ,..., Z_{iQ} \sim N(0,  \alpha_Qx_{iQ}). \label{censored_latents}
+\end{align} This means that we will need to find the conditional
+expectations of \(Y_i^2\) and \(Z_{i1}^2, ..., Z_{iQ}^2\), given the
+observed outcome value, \(X_i\), which may be censored.
+\textbackslash{[}6pt{]} From \citep{Aitkin1964}, we see that for
+bivariate normal variables \(M\) and \(N\), where
+
+\bibliography{references.bib}
+
+
+\end{document}
+
